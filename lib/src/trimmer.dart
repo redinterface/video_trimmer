@@ -163,7 +163,7 @@ class Trimmer {
     required double startValue,
     required double endValue,
     required Function(String? outputPath) onSave,
-    bool applyVideoEncoding = false,
+    bool applyVideoEncoding = true,
     FileFormat? outputFormat,
     String? ffmpegCommand,
     String? customVideoFormat,
@@ -223,7 +223,8 @@ class Trimmer {
     }
 
     String trimLengthCommand =
-        ' -ss $startPoint -i "$videoPath" -t ${endPoint - startPoint} -avoid_negative_ts make_zero ';
+        ' -ss $startPoint -i "$videoPath" -t ${endPoint - startPoint} '
+        '-avoid_negative_ts make_zero  ';
 
     if (ffmpegCommand == null) {
       command = '$trimLengthCommand -c:a copy ';
@@ -246,7 +247,7 @@ class Trimmer {
     outputPath = '$path$videoFileName$outputFormatString';
 
     command += '"$outputPath"';
-
+    debugPrint("command is: $command");
     FFmpegKit.executeAsync(command, (session) async {
       final state =
           FFmpegKitConfig.sessionStateToString(await session.getState());

@@ -41,15 +41,22 @@ class _TrimmerViewState extends State<TrimmerView> {
       startValue: _startValue,
       endValue: _endValue,
       onSave: (outputPath) {
+
         setState(() {
           _progressVisibility = false;
         });
-        debugPrint('OUTPUT PATH: $outputPath');
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => Preview(outputPath),
-          ),
-        );
+        if(outputPath != null ) {
+          debugPrint('OUTPUT PATH: $outputPath');
+          var file = File(outputPath!);
+          debugPrint('size is ${file.lengthSync() / 1024}K');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => Preview(outputPath),
+            ),
+          );
+        } else {
+          debugPrint('output path is null');
+        }
       },
     );
   }
@@ -95,6 +102,7 @@ class _TrimmerViewState extends State<TrimmerView> {
                     child: TrimViewer(
                       trimmer: _trimmer,
                       viewerHeight: 50.0,
+                      type: ViewerType.scrollable,
                       viewerWidth: MediaQuery.of(context).size.width,
                       durationStyle: DurationStyle.FORMAT_MM_SS,
                       maxVideoLength: const Duration(seconds: 10),

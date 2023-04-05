@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -196,7 +197,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   bool _allowDrag = true;
 
   late final ScrollController _scrollController;
-  double scrollByValue = 10.0;
+  double scrollByValue = 5.0;
   double currentScrollValue = 0.0;
   double totalVideoLengthInPixels = 0.0;
 
@@ -205,7 +206,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
 
   void startScrolling(bool isTowardsEnd) {
     _scrollingTimer =
-        Timer.periodic(const Duration(milliseconds: 300), (timer) {
+        Timer.periodic(const Duration(milliseconds: 100), (timer) {
       setState(() {
         final midPoint = (_endPos.dx - _startPos.dx) / 2;
         var speedMultiplier = 1;
@@ -220,9 +221,8 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
           log('End scroll speed: ${speedMultiplier}x');
           if (_endPos.dx >= _autoEndScrollPos &&
               currentScrollValue <= totalVideoLengthInPixels) {
-            currentScrollValue = math.min(
-                currentScrollValue + scrollByValue * speedMultiplier,
-                _numberOfThumbnails * _thumbnailViewerH);
+            currentScrollValue =
+                currentScrollValue + scrollByValue * 2;
           } else {
             _scrollingTimer?.cancel();
             return;
@@ -265,7 +265,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
   void startTimer(bool isTowardsEnd) {
     var start = 300;
     _scrollStartTimer = Timer.periodic(
-      const Duration(milliseconds: 100),
+      const Duration(milliseconds: 50),
       (Timer timer) {
         if (start == 0) {
           timer.cancel();
@@ -483,36 +483,101 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
     } else if (_dragType == EditorDragType.center) {
       _startCircleSize = widget.editorProperties.circleSizeOnDrag;
       _endCircleSize = widget.editorProperties.circleSizeOnDrag;
-      if ((_startPos.dx + details.delta.dx >= 0) &&
-          (_endPos.dx + details.delta.dx <= _thumbnailViewerW)) {
+      log("end pos: ${_endPos.dx}, total : $_thumbnailViewerW");
+      if (_draggingRight(details) ) {
+        if(currentScrollValue < totalVideoLengthInPixels
+        && _endPos.dx + details.delta.dx >= _thumbnailViewerW -2
+        ) {
+          log("trying to scroll $currentScrollValue");
+          setState((){
+            currentScrollValue = math.min(
+                currentScrollValue + scrollByValue,
+                _numberOfThumbnails * _thumbnailViewerH);
+            log("currentScrollValue $currentScrollValue");
+          });
+          _scrollController.jumpTo(currentScrollValue);
+          // _scrollController.animateTo(
+          //   currentScrollValue,
+          //   curve: Curves.easeOut,
+          //   duration: const Duration(milliseconds: 10),
+          // );
+          final durationChange = (_scrollController.position.pixels /
+              _scrollController.position.maxScrollExtent) *
+              _remainingDuration;
+          _videoStartPos = (_trimmerAreaDuration * _startFraction) + durationChange;
+          _videoEndPos = (_trimmerAreaDuration * _endFraction) + durationChange;
+        }
+        if (_endPos.dx + details.delta.dx <= _thumbnailViewerW){
+        log('dragging right');
         _startPos += details.delta;
         _endPos += details.delta;
         _onStartDragged();
         _onEndDragged();
-      }
-    } else {
-      _endCircleSize = widget.editorProperties.circleSizeOnDrag;
-      if ((_endPos.dx + details.delta.dx <= _thumbnailViewerW) &&
-          (_endPos.dx + details.delta.dx >= _startPos.dx) &&
-          !(_endPos.dx - _startPos.dx + details.delta.dx > maxLengthPixels!)) {
-        _endPos += details.delta;
-        _onEndDragged();
+        }
+      } else if(_draggingLeft(details)){
+        log("currentScrollValue $currentScrollValue, "
+            "start pos: ${_startPos.dx}, dx: ${details.delta.dx}");
+        if (currentScrollValue > 0
+        && _startPos.dx + details.delta.dx < 2
+        ) {
+          log("scrolling left");
+          setState(() {
+            currentScrollValue = math.max(
+                currentScrollValue - scrollByValue,
+                0);
+            log("currentScrollValue $currentScrollValue");
+          });
+          _scrollController.jumpTo(currentScrollValue);
+          // _scrollController.animateTo(
+          //   currentScrollValue,
+          //   curve: Curves.easeOut,
+          //   duration: const Duration(milliseconds: 100),
+          // );
+
+
+          final durationChange = (_scrollController.position.pixels /
+              _scrollController.position.maxScrollExtent) *
+              _remainingDuration;
+          _videoStartPos =
+              (_trimmerAreaDuration * _startFraction) + durationChange;
+          _videoEndPos = (_trimmerAreaDuration * _endFraction) + durationChange;
+        }
+        if(_startPos.dx + details.delta.dx > 0.0 ) {
+          _startPos += details.delta;
+          _endPos += details.delta;
+          _onStartDragged();
+          _onEndDragged();
+          _endCircleSize = widget.editorProperties.circleSizeOnDrag;
+        }
+        // if ((_endPos.dx + details.delta.dx <= _thumbnailViewerW) &&
+        //     (_endPos.dx + details.delta.dx >= _startPos.dx) &&
+        //     !(_endPos.dx - _startPos.dx + details.delta.dx >
+        //         maxLengthPixels!)) {
+        //   _endPos += details.delta;
+        //   _onEndDragged();
+        // }
       }
     }
     // log('Video Duration :: Start: ${_videoStartPos / 1000}ms, End: ${_videoEndPos / 1000}ms');
     // log('UPDATE => START: ${_startPos.dx}, END: ${_endPos.dx}');
-    _scrollStartTimer?.cancel();
-    if (_endPos.dx >= _autoEndScrollPos &&
-        currentScrollValue <= totalVideoLengthInPixels) {
-      startTimer(true);
-    } else if (_startPos.dx <= _autoStartScrollPos &&
-        currentScrollValue != 0.0) {
-      startTimer(false);
-    }
-
-    setState(() {});
+    // _scrollStartTimer?.cancel();
+    // if (_endPos.dx >= _autoEndScrollPos &&
+    //     currentScrollValue <= totalVideoLengthInPixels) {
+    //   startTimer(true);
+    // } else if (_startPos.dx <= _autoStartScrollPos &&
+    //     currentScrollValue != 0.0) {
+    //   startTimer(false);
+    // }
+    //
+    // setState(() {});
   }
-
+  bool _draggingRight(DragUpdateDetails details ) {
+    log('dx ${details.delta.dx}');
+    return (details.delta.dx > 0);
+  }
+  bool _draggingLeft(DragUpdateDetails details ) {
+    return (details.delta.dx < 0);
+  }
   void _onStartDragged() {
     if (_scrollingTimer?.isActive ?? false) return;
     _startFraction = (_startPos.dx / _thumbnailViewerW);
@@ -679,7 +744,11 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                                             ? 1.0
                                             : 0.0,
                                     duration: const Duration(milliseconds: 300),
-                                    child: widget.areaProperties.startIcon),
+                                    child: GestureDetector(
+                                      onLongPress: (){
+                                        startTimer(false);
+                                      },
+                                        child: widget.areaProperties.startIcon)),
                                 const Spacer(),
                                 AnimatedOpacity(
                                   opacity: _scrollController.position.pixels !=
@@ -687,8 +756,12 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                                               .position.maxScrollExtent
                                       ? 1.0
                                       : 0.0,
-                                  duration: const Duration(milliseconds: 300),
-                                  child: widget.areaProperties.endIcon,
+                                  duration: const Duration(milliseconds: 200),
+                                  child: GestureDetector(
+                                      onLongPress: (){
+                                        startTimer(true);
+                                      },
+                                      child: widget.areaProperties.endIcon),
                                 ),
                               ],
                             ),
