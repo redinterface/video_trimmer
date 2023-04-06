@@ -186,7 +186,7 @@ class Trimmer {
 
     videoFolderName ??= "Trimmer";
 
-    videoFileName ??= "${videoName}_trimmed:$formattedDateTime";
+    videoFileName ??= "${videoName}_trimmed_$formattedDateTime";
 
     videoFileName = videoFileName.replaceAll(' ', '_');
 
