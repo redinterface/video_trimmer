@@ -163,7 +163,7 @@ class Trimmer {
     required double startValue,
     required double endValue,
     required Function(String? outputPath) onSave,
-    bool applyVideoEncoding = true,
+    bool applyVideoEncoding = false,
     FileFormat? outputFormat,
     String? ffmpegCommand,
     String? customVideoFormat,
