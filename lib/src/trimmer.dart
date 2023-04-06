@@ -178,20 +178,11 @@ class Trimmer {
 
     String command;
 
-    // Formatting Date and Time
-    String dateTime = DateFormat.yMMMd()
-        .addPattern('-')
-        .add_Hms()
-        .format(DateTime.now())
-        .toString();
 
-    // String _resultString;
     String outputPath;
     String? outputFormatString;
-    String formattedDateTime = dateTime.replaceAll(' ', '');
-
-    debugPrint("DateTime: $dateTime");
-    debugPrint("Formatted: $formattedDateTime");
+    String formattedDateTime = (DateTime.now().millisecondsSinceEpoch/1000)
+        .toString();
 
     videoFolderName ??= "Trimmer";
 
