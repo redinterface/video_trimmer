@@ -214,7 +214,7 @@ class Trimmer {
     }
 
     String trimLengthCommand =
-        ' -ss $startPoint -i "$videoPath" -movflags use_metadata_tag -t '
+        ' -ss $startPoint -i "$videoPath" -movflags use_metadata_tags -t '
         '${endPoint - startPoint} -avoid_negative_ts make_zero  ';
 
     if (ffmpegCommand == null) {
