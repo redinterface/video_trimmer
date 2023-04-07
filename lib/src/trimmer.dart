@@ -294,5 +294,8 @@ class Trimmer {
   /// Clean up
   void dispose() {
     _controller.close();
+    if(_videoPlayerController != null) {
+      _videoPlayerController!.dispose();
+    }
   }
 }
