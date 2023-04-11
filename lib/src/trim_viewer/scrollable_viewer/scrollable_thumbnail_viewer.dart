@@ -29,10 +29,10 @@ class ScrollableThumbnailViewer extends StatelessWidget {
     this.quality = 75,
   }) : super(key: key);
 
-  Stream<List<Uint8List?>> generateThumbnail() async* {
+  Stream<List<Uint8List>> generateThumbnail() async* {
     final String videoPath = videoFile.path;
     double eachPart = videoDuration / numberOfThumbnails;
-    List<Uint8List?> byteList = [];
+    List<Uint8List> byteList = [];
     // the cache of last thumbnail
     Uint8List? lastBytes;
     for (int i = 1; i <= numberOfThumbnails; i++) {
@@ -53,7 +53,9 @@ class ScrollableThumbnailViewer extends StatelessWidget {
       } else {
         bytes = lastBytes;
       }
-      byteList.add(bytes);
+      if(bytes!= null) {
+        byteList.add(bytes);
+      }
       if (byteList.length == numberOfThumbnails) {
         onThumbnailLoadingComplete();
       }
@@ -70,13 +72,12 @@ class ScrollableThumbnailViewer extends StatelessWidget {
         child: SizedBox(
           width: numberOfThumbnails * thumbnailHeight,
           height: thumbnailHeight,
-          child: StreamBuilder<List<Uint8List?>>(
+          child: StreamBuilder<List<Uint8List>>(
             stream: generateThumbnail(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                List<Uint8List?> imageBytes = snapshot.data!;
-                imageBytes.removeWhere((element) => element == null);
-                return imageBytes.length > 0 ? Row(
+                List<Uint8List> imageBytes = snapshot.data!;
+                return  Row(
                   mainAxisSize: MainAxisSize.max,
                   children: List.generate(
                     numberOfThumbnails,
@@ -96,7 +97,7 @@ class ScrollableThumbnailViewer extends StatelessWidget {
                           index < imageBytes.length
                               ? FadeInImage(
                                   placeholder: MemoryImage(kTransparentImage),
-                                  image: MemoryImage(imageBytes[index]!),
+                                  image: MemoryImage(imageBytes[index]),
                                   fit: fit,
                                 )
                               : const SizedBox(),
@@ -104,13 +105,8 @@ class ScrollableThumbnailViewer extends StatelessWidget {
                       ),
                     ),
                   ),
-                )
-                :
-                Container(
-                  color: Colors.grey[900],
-                  height: thumbnailHeight,
-                  width: double.maxFinite,
                 );
+
               } else {
                 return Container(
                   color: Colors.grey[900],
