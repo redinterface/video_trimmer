@@ -75,7 +75,8 @@ class ScrollableThumbnailViewer extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 List<Uint8List?> imageBytes = snapshot.data!;
-                return Row(
+                imageBytes.removeWhere((element) => element == null);
+                return imageBytes.length > 0 ? Row(
                   mainAxisSize: MainAxisSize.max,
                   children: List.generate(
                     numberOfThumbnails,
@@ -103,6 +104,12 @@ class ScrollableThumbnailViewer extends StatelessWidget {
                       ),
                     ),
                   ),
+                )
+                :
+                Container(
+                  color: Colors.grey[900],
+                  height: thumbnailHeight,
+                  width: double.maxFinite,
                 );
               } else {
                 return Container(
