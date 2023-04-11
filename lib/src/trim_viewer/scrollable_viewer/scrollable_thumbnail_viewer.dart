@@ -90,7 +90,9 @@ class ScrollableThumbnailViewer extends StatelessWidget {
                           Opacity(
                             opacity: 0.2,
                             child: Image.memory(
-                              imageBytes[0] ?? kTransparentImage,
+                              imageBytes.isNotEmpty ?
+                              imageBytes[0] :
+                              kTransparentImage,
                               fit: fit,
                             ),
                           ),

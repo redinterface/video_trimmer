@@ -46,7 +46,6 @@ class _TrimmerViewState extends State<TrimmerView> {
           _progressVisibility = false;
         });
         if(outputPath != null ) {
-          var file = File(outputPath!);
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => Preview(outputPath),
