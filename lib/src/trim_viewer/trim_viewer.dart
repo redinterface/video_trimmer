@@ -275,10 +275,4 @@ class _TrimViewerState extends State<TrimViewer> with TickerProviderStateMixin {
                     ? scrollableViewer
                     : fixedTrimViewer;
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-    widget.trimmer.dispose();
-  }
 }
