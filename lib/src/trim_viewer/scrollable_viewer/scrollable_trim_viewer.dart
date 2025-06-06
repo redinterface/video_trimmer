@@ -16,6 +16,7 @@ import 'package:video_trimmer/src/utils/duration_style.dart';
 import '../../utils/editor_drag_type.dart';
 import 'scrollable_thumbnail_viewer.dart';
 
+/// Widget for displaying the video trimmer.
 class ScrollableTrimViewer extends StatefulWidget {
   /// The Trimmer instance controlling the data.
   final Trimmer trimmer;
@@ -100,8 +101,7 @@ class ScrollableTrimViewer extends StatefulWidget {
   ///
   ///
   /// * [durationTextStyle] is for providing a `TextStyle` to the
-  /// duration text. By default it is set to
-  /// `TextStyle(color: Colors.white)`
+  /// duration text. By default it is set to `TextStyle(color: Colors.white)`.
   ///
   ///
   /// * [onChangeStart] is a callback to the video start position.
@@ -325,7 +325,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
         final numberOfThumbnailsTotal = (numberOfThumbnailsInArea *
                 (totalDuration.inMilliseconds /
                     trimAreaDuration.inMilliseconds))
-            .toInt();
+            .ceil();
         log('THUMBNAILS: in area=$numberOfThumbnailsInArea, total=$numberOfThumbnailsTotal');
 
         // find precise durations according to the number of thumbnails;
@@ -770,14 +770,14 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                   ],
                 ),
               ),
-              // This widget is in development for making the DEBUGGING
-              // process of this package easier
+              // This widget is used in development for making the DEBUGGING
+              // process of this package easier.
               Visibility(
                 visible: false,
                 child: Row(
                   children: [
                     Container(
-                      color: Colors.red.withOpacity(0.6),
+                      color: Colors.red.withValues(alpha: 0.6),
                       height: _thumbnailViewerH,
                       // 2% of total trimmer width
                       width: (_thumbnailViewerW == 0.0
@@ -787,7 +787,7 @@ class _ScrollableTrimViewerState extends State<ScrollableTrimViewer>
                     ),
                     const Spacer(),
                     Container(
-                      color: Colors.red.withOpacity(0.6),
+                      color: Colors.red.withValues(alpha: 0.6),
                       height: _thumbnailViewerH,
                       // 2% of total trimmer width
                       width: (_thumbnailViewerW == 0.0
